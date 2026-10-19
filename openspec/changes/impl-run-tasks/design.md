@@ -42,14 +42,14 @@
 ### D3. Права й RLS (AC-TASK-06, AC-TASK-08, матриця прав)
 
 - Таблиці шаблонів: `grant select` для `authenticated`, політика `select … to authenticated using (true)` (бачать усі manager/admin). Запис — лише `service_role`/міграція: шаблони готує адміністратор поза застосунком (вимоги PM: екран не обов'язковий).
-- `runs`, `run_sections`, `run_tasks`: `grant select` для `authenticated`; **insert/update/delete напряму не видаємо** — запис лише через функції D4/D5. Політики `select` (`to authenticated`, `(select auth.uid())`) через хелпер `private.can_see_run(run_id)` (`security definer`, `set search_path = ''`): `true`, якщо роль `admin`, або `runs.manager_id = uid`, або `uid` — виконавець хоча б однієї задачі цього запуску. Хелпер потрібен, щоб політики `runs` і `run_tasks` не посилалися одна на одну (42P17).
+- `runs`, `run_sections`, `run_tasks`: `grant select` для `authenticated`; **insert/update/delete напряму не видаємо** — запис лише через функції D4/D5. Політики `select` (`to authenticated`, `(select auth.uid())`) через хелпер `private.can_see_run(run_id)` (`security definer`, `set search_path = ''`): `true`, якщо роль `admin`, або `runs.manager_id = uid`, або `uid` — виконавець хоча б однієї задачі цього запуску. Хелпер потрібен, щоб політики `runs` і `run_tasks` не посилалися одна на одну (42P17). Для `private.can_see_run`: `revoke execute from public, anon` і `grant execute to authenticated`, бо політики RLS викликаються від імені `authenticated`; `USAGE` на схемі `private` уже є (стартова міграція).
 - Тому виконавець бачить усі задачі запуску, де має хоча б одну свою (припущення PM), а сторонній менеджер не бачить запуск зовсім (AC-TASK-06).
 - Політики пишемо на кожну надану операцію (тут лише `select`); решта операцій заборонена відсутністю grant.
 - RLS на `profiles` не послаблюємо.
 
 ### D4. Запуск шаблону: `launch_run` (AC-RUN-01…09)
 
-Одна функція Postgres, бо supabase-js не має транзакцій. Схема: `public.launch_run(p_template_id uuid, p_case_name text, p_assignments jsonb default '[]')` — `security invoker`, лише делегує у `private.launch_run(...)` (`security definer`, `set search_path = ''`); `execute` — тільки `authenticated`. Повертає `uuid` запуску. Кроки:
+Одна функція Postgres, бо supabase-js не має транзакцій. Схема: `public.launch_run(p_template_id uuid, p_case_name text, p_assignments jsonb default '[]')` — `security invoker`, лише делегує у `private.launch_run(...)` (`security definer`, `set search_path = ''`); `revoke execute from public, anon`; `grant execute to authenticated` на public-обгортку і на private-реалізацію (обгортка `security invoker` викликає її від імені користувача). Повертає `uuid` запуску. Кроки:
 
 1. Назва: `btrim` (робоче припущення Q3, PM не відповів); порожня → виняток `Enter a case name` (AC-RUN-03); довша за 100 символів → `Case name must be at most 100 characters` (AC-RUN-07). Тексти повідомлень — дослівно з AC.
 2. Створити `runs` (`manager_id = auth.uid()`, статус `in_progress`) — будь-який manager чи admin (AC-RUN-05, AC-RUN-06).
@@ -60,7 +60,7 @@ Pre-валідація назви дублюється в TypeScript (`validateC
 
 ### D5. Позначення задачі й автозавершення: `mark_task_done` (AC-TASK-01, 02, 03, 04, 07)
 
-`public.mark_task_done(p_task_id uuid)` — `security invoker`, делегує в `private.mark_task_done` (`security definer`, `set search_path = ''`). Кроки в одній транзакції:
+`public.mark_task_done(p_task_id uuid)` — `security invoker`, делегує в `private.mark_task_done` (`security definer`, `set search_path = ''`); `revoke execute from public, anon`; `grant execute to authenticated` на public-обгортку і на private-реалізацію (обгортка `security invoker` викликає її від імені користувача). Кроки в одній транзакції:
 
 1. Заблокувати рядок задачі й запуску (`for update`), щоб паралельні позначки не розійшлися в статусі запуску.
 2. Дозволено, якщо `auth.uid()` — виконавець задачі, або менеджер запуску, або роль `admin` (AC-TASK-01, 02, 07). Інакше виняток з текстом `Only the task's assignee, the run manager, or an administrator can mark a task as done` (AC-TASK-03), код `42501`; задача лишається `to_do`.
@@ -71,7 +71,7 @@ AC-TASK-03 досяжний через UI: кнопка «Mark as done» сто�
 
 ### D6. Вибір виконавця (AC-RUN-04; робоче припущення Q1)
 
-`public.list_assignable_users()` — `security invoker`, делегує в `private.list_assignable_users()` (`security definer`), повертає лише `id` і `email` користувачів з роллю `manager` або `admin` (без ролі й іншого профілю). Використовується у формі запуску й для підпису виконавця на сторінці запуску (мапа `assignee_id → email`). Доступ розширювати без відповіді PM (solomchaak/property-workflows-spec#5) не будемо.
+`public.list_assignable_users()` — `security invoker`, делегує в `private.list_assignable_users()` (`security definer`), повертає лише `id` і `email` користувачів з роллю `manager` або `admin` (без ролі й іншого профілю). `revoke execute from public, anon`; `grant execute to authenticated` на public-обгортку і на private-реалізацію (обгортка `security invoker` викликає її від імені користувача). Використовується у формі запуску й для підпису виконавця на сторінці запуску (мапа `assignee_id → email`). Доступ розширювати без відповіді PM (solomchaak/property-workflows-spec#5) не будемо.
 
 ### D7. Сторінки й server actions (AC-RUN-03, AC-RUN-07, AC-TASK-03, 05, 06, 08, 09)
 
