@@ -17,28 +17,38 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
   }
 
   const { id } = await params;
-  const { data: run } = await supabase
+  const { data: run, error: runError } = await supabase
     .from("runs")
     .select("id, case_name, status")
     .eq("id", id)
     .maybeSingle();
+  if (runError) {
+    throw new Error("Failed to load the run");
+  }
   if (!run) {
     notFound();
   }
 
-  const { data: sections } = await supabase
-    .from("run_sections")
-    .select("id, name, position")
-    .eq("run_id", run.id);
-  const { data: tasks } = await supabase
-    .from("run_tasks")
-    .select("id, name, position, required, status, assignee_id, section_id")
-    .eq("run_id", run.id);
-  // Виконавців підписуємо email із вузької функції: ролі й решти профілю менеджер не бачить.
-  const { data: users } = await supabase.rpc("list_assignable_users");
+  // Незалежні запити — паралельно. Виконавців підписуємо email із вузької функції:
+  // ролі й решти профілю менеджер не бачить.
+  const [sectionsResult, tasksResult, usersResult] = await Promise.all([
+    supabase.from("run_sections").select("id, name, position").eq("run_id", run.id),
+    supabase
+      .from("run_tasks")
+      .select("id, name, position, required, status, assignee_id, section_id")
+      .eq("run_id", run.id),
+    supabase.rpc("list_assignable_users"),
+  ]);
+  if (sectionsResult.error) throw new Error("Failed to load run sections");
+  if (tasksResult.error) throw new Error("Failed to load run tasks");
+  if (usersResult.error) throw new Error("Failed to load assignees");
 
-  const allTasks = tasks ?? [];
-  const groups = groupTasksBySection(sections ?? [], allTasks);
+  const sections = sectionsResult.data;
+  const tasks = tasksResult.data;
+  const users = usersResult.data;
+
+  const allTasks = tasks;
+  const groups = groupTasksBySection(sections, allTasks);
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-16">
@@ -73,7 +83,7 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
                   </span>
                 </span>
                 <span className="text-zinc-500">
-                  {taskStatusLabel(task.status)} · {assigneeLabel(task.assignee_id, users ?? [])}
+                  {taskStatusLabel(task.status)} · {assigneeLabel(task.assignee_id, users)}
                 </span>
               </li>
             ))}

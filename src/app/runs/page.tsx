@@ -14,16 +14,23 @@ export default async function RunsPage() {
     redirect("/login");
   }
 
-  const { data: runs } = await supabase
+  const { data: runs, error: runsError } = await supabase
     .from("runs")
     .select("id, case_name, status, created_at")
     .order("created_at", { ascending: false });
+  // Помилку не маскуємо порожнім списком: error.tsx покаже «Something went wrong».
+  if (runsError) {
+    throw new Error("Failed to load runs");
+  }
 
   // Задачі беремо окремим запитом: run_tasks пов'язана з run_sections, а не напряму з runs.
   const runIds = (runs ?? []).map((run) => run.id);
-  const { data: tasks } = runIds.length
+  const { data: tasks, error: tasksError } = runIds.length
     ? await supabase.from("run_tasks").select("run_id, status").in("run_id", runIds)
-    : { data: [] };
+    : { data: [], error: null };
+  if (tasksError) {
+    throw new Error("Failed to load run tasks");
+  }
 
   const items = buildRunList(runs ?? [], tasks ?? []);
 
