@@ -12,7 +12,7 @@ Docker не потрібен: локально — лише npm run dev прот
 -->
 
 Моє репо: https://github.com/ylehenkyi-qc/pmwp-ylehenkyi · Прод-URL: https://pmwp-ylehenkyi.vercel.app/
-Репо вимог PM: <!-- https://github.com/<pm>/<team-slug>-spec --> · Організація Supabase: Yevhen Co Org
+Репо вимог PM: https://github.com/solomchaak/property-workflows-spec · Організація Supabase: Yevhen Co Org
 
 ## 1. Інструменти й репо
 
@@ -76,22 +76,22 @@ Docker не потрібен: локально — лише npm run dev прот
 
 ## 7. Перший PR (перевірка ruleset-у)
 
-- [ ] `git switch -c setup/bootstrap` → цей файл із доказами розділів 1–6 → push → `gh pr create --web` (тип «Реалізація»)
-      → окремим коментарем `@coderabbitai review` — <!-- посилання на PR (наступним PR) -->
-- [ ] Поки перевірки не зелені, кнопка merge заблокована; push у `main` напряму відхиляється — docs/img/4-52-16-10.png
-- [ ] Vercel створив preview для PR — <!-- посилання на preview (наступним PR) -->
-- [ ] **Squash and merge** → прод-деплой Vercel пройшов — <!-- посилання -->
-- [ ] (З першою задачею, що має міграцію) `db-check` зелений, після merge `db-deploy` застосував її у вашу базу — <!-- посилання на run -->
+- [x] `git switch -c setup/bootstrap` → цей файл із доказами розділів 1–6 → push → `gh pr create --web` (тип «Реалізація»)
+      → окремим коментарем `@coderabbitai review` — https://github.com/ylehenkyi-qc/pmwp-ylehenkyi/pull/1
+- [x] Поки перевірки не зелені, кнопка merge заблокована; push у `main` напряму відхиляється — docs/img/4-52-16-10.png
+- [x] Vercel створив preview для PR — https://pmwp-ylehenkyi-git-setup-bootstrap-yevhen-qc.vercel.app/
+- [x] **Squash and merge** → прод-деплой Vercel пройшов — https://pmwp-ylehenkyi.vercel.app/
+- [x] (З першою задачею, що має міграцію) `db-check` зелений, після merge `db-deploy` застосував її у вашу базу — https://github.com/ylehenkyi-qc/property-worfklows/actions/runs/39403339076
 
 ## 8. Вимоги PM і специфікація
 
-- [ ] Адресу репо вимог PM узято з чату команди; на зустрічі команди (дні 0–2, до кінця 15.10, організує PM; якщо
-      команда не зібралася — діра в чат команди до обіду 16.10) — перший раунд питань до брифу
-- [ ] PM написав у чаті команди «вимоги оновлено» (у курсі перші вимоги — до кінця 16.10) → у Claude Code чи Cursor
+- [x] Адресу репо вимог PM узято з чату команди; на зустрічі команди (дні 0–2, до кінця 15.10, організує PM; якщо
+      команда не зібралася — діра в чат команди до обіду 16.10) — перший раунд питань до брифу — https://github.com/solomchaak/property-workflows-spec; зустріч команди не проводилась, питання поставлено після публікації вимог
+- [x] PM написав у чаті команди «вимоги оновлено» (у курсі перші вимоги — до кінця 16.10) → у Claude Code чи Cursor
       `/requirements-sync <pm>/<team-slug>-spec` → PR «Оновлення вимог» злито; шапка `docs/conformance.md` показує
-      адресу, джерело (issues чи docs) і дату знімка — <!-- посилання на PR -->
-- [ ] Читання вимог: скіл `spec-clarify` → питання — issues «Питання до вимог» у репо PM через вебформу → журнал
-      `docs/spec-reading.md` — <!-- посилання на issues -->
-- [ ] Переклад у специфікацію (гілка `spec/add-<зріз>`): `/opsx:propose add-<зріз>` → `npx openspec validate add-<зріз> --strict`
+      адресу, джерело (issues чи docs) і дату знімка — https://github.com/ylehenkyi-qc/pmwp-ylehenkyi/pull/2
+- [x] Читання вимог: скіл `spec-clarify` → питання — issues «Питання до вимог» у репо PM через вебформу → журнал
+      `docs/spec-reading.md` — https://github.com/solomchaak/property-workflows-spec/issues/6, https://github.com/solomchaak/property-workflows-spec/issues/7, https://github.com/solomchaak/property-workflows-spec/issues/4#issuecomment-6273815465
+- [x] Переклад у специфікацію (гілка `spec/add-<зріз>`): `/opsx:propose add-<зріз>` → `npx openspec validate add-<зріз> --strict`
       → скіл `spec-review` → `npx openspec archive add-<зріз> -y` → `/conformance` → PR «Специфікація» злито;
-      `npm run ac:coverage` без «вимогу PM ще не перекладено» — <!-- посилання на PR -->
+      `npm run ac:coverage` без «вимогу PM ще не перекладено» — https://github.com/ylehenkyi-qc/pmwp-ylehenkyi/pull/3
