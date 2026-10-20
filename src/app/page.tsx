@@ -31,6 +31,9 @@ export default async function Home() {
         <dt className="text-zinc-500">Роль</dt>
         <dd data-testid="user-role">{profile?.role ?? "профіль не знайдено"}</dd>
       </dl>
+      <Link href="/runs" className="text-sm underline">
+        Runs
+      </Link>
       <Link href="/runs/new" className="text-sm underline">
         New run
       </Link>
