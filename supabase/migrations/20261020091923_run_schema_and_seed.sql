@@ -138,25 +138,25 @@ grant execute on function private.can_see_run(uuid) to authenticated;
 
 -- ── Політики (окремо на кожну надану операцію — лише select) ───────────────────────────────
 create policy templates_select_authenticated
-  on public.templates for select to authenticated using (true);
+  on public.templates for select to authenticated using ((select auth.uid()) is not null);
 
 create policy template_sections_select_authenticated
-  on public.template_sections for select to authenticated using (true);
+  on public.template_sections for select to authenticated using ((select auth.uid()) is not null);
 
 create policy template_tasks_select_authenticated
-  on public.template_tasks for select to authenticated using (true);
+  on public.template_tasks for select to authenticated using ((select auth.uid()) is not null);
 
 create policy runs_select_visible
   on public.runs for select to authenticated
-  using (private.can_see_run(id));
+  using ((select auth.uid()) is not null and private.can_see_run(id));
 
 create policy run_sections_select_visible
   on public.run_sections for select to authenticated
-  using (private.can_see_run(run_id));
+  using ((select auth.uid()) is not null and private.can_see_run(run_id));
 
 create policy run_tasks_select_visible
   on public.run_tasks for select to authenticated
-  using (private.can_see_run(run_id));
+  using ((select auth.uid()) is not null and private.can_see_run(run_id));
 
 -- ── Сид шаблону «Tenant move-in»: 2 секції, 5 задач, 3 обов'язкові (дані синтетичні) ──────────
 insert into public.templates (id, name)
