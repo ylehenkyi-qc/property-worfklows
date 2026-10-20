@@ -3,11 +3,14 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { groupTasksBySection } from "@/lib/runs/groupTasksBySection";
 import { assigneeLabel, runStatusLabel, taskStatusLabel } from "@/lib/runs/labels";
+import { isMarkTaskErrorCode, MARK_TASK_ERRORS } from "@/lib/runs/markTaskErrors";
 import { formatRunProgress } from "@/lib/runs/progress";
+import { markTaskDone } from "./actions";
 
 // Сторінка запуску (AC-TASK-05, AC-TASK-08): прогрес, статус, задачі за секціями зі статусом, обов'язковістю й виконавцем.
-// Чужий запуск RLS не повертає — сторінка «Run not found». Кнопка «Mark as done» — група 2 плану.
-export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
+// Чужий запуск RLS не повертає — сторінка «Run not found». Кнопка «Mark as done» (AC-TASK-01, 02, 03, 07) стоїть на кожній
+// задачі «to do» для всіх, хто бачить запуск; право позначати перевіряє база.
+export default async function RunPage({ params, searchParams }: PageProps<"/runs/[id]">) {
   const supabase = await createClient();
 
   // getClaims() перевіряє JWT. getSession() для авторизації на сервері не використовуємо.
@@ -17,6 +20,8 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
   }
 
   const { id } = await params;
+  const { error } = await searchParams;
+  const errorMessage = isMarkTaskErrorCode(error) ? MARK_TASK_ERRORS[error] : undefined;
   const { data: run, error: runError } = await supabase
     .from("runs")
     .select("id, case_name, status")
@@ -66,6 +71,12 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
         </p>
       </div>
 
+      {errorMessage ? (
+        <p role="alert" className="text-sm text-red-600">
+          {errorMessage}
+        </p>
+      ) : null}
+
       {groups.map(({ section, tasks: sectionTasks }) => (
         <section key={section.id} className="flex flex-col gap-2">
           <h2 className="text-sm font-medium">{section.name}</h2>
@@ -82,8 +93,18 @@ export default async function RunPage({ params }: PageProps<"/runs/[id]">) {
                     {task.required ? "required" : "optional"}
                   </span>
                 </span>
-                <span className="text-zinc-500">
+                <span className="flex items-baseline gap-3 text-zinc-500">
                   {taskStatusLabel(task.status)} · {assigneeLabel(task.assignee_id, users)}
+                  {task.status === "to_do" ? (
+                    <form action={markTaskDone.bind(null, task.id, run.id)}>
+                      <button
+                        type="submit"
+                        className="rounded border border-zinc-300 px-3 py-1 text-xs text-foreground dark:border-zinc-700"
+                      >
+                        Mark as done
+                      </button>
+                    </form>
+                  ) : null}
                 </span>
               </li>
             ))}
