@@ -176,6 +176,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "email": string,"id": string
             }[]
+                           },
+"mark_task_done":
+{ Args: { "p_task_id": string }; Returns: undefined
                            }
           }
           Enums: {

@@ -42,12 +42,12 @@
 | AC-RUN-07 | назва випадку у 101 символ відхиляється з повідомленням «Case name must be at most 100 characters» | `src/lib/runs/validateCaseName.ts`, `src/app/runs/new/actions.ts` (launchRun), `supabase/migrations/20261020091927_launch_run_functions.sql` (launch_run) | `src/lib/runs/validateCaseName.test.ts`, `src/app/runs/new/actions.test.ts` | реалізовано |
 | AC-RUN-08 | без призначення виконавців менеджер — виконавець усіх 5 задач | `supabase/migrations/20261020091927_launch_run_functions.sql` (launch_run) | — | відкладено (DB-тести не запускаються в CI) |
 | AC-RUN-09 | без призначення виконавців адміністратор — виконавець усіх 5 задач | `supabase/migrations/20261020091927_launch_run_functions.sql` (launch_run) | — | відкладено (DB-тести не запускаються в CI) |
-| AC-TASK-01 | виконавець позначає свою задачу «done» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-02 | менеджер запуску позначає задачу виконавця «done» | — | — | відкладено (чекає реалізації) |
-| AC-TASK-03 | сторонній менеджер не може позначити задачу, бачить повідомлення з відмовою | — | — | відкладено (чекає реалізації) |
-| AC-TASK-04 | виконання третьої обов'язкової задачі дає запуску статус «completed» | — | — | відкладено (чекає реалізації) |
+| AC-TASK-01 | виконавець позначає свою задачу «done» | `supabase/migrations/20261020142036_mark_task_done.sql` (mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | — | відкладено (DB-тести не запускаються в CI) |
+| AC-TASK-02 | менеджер запуску позначає задачу виконавця «done» | `supabase/migrations/20261020142036_mark_task_done.sql` (mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | — | відкладено (DB-тести не запускаються в CI) |
+| AC-TASK-03 | сторонній менеджер не може позначити задачу, бачить повідомлення з відмовою | `supabase/migrations/20261020142036_mark_task_done.sql` (mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | — | відкладено (DB-тести не запускаються в CI) |
+| AC-TASK-04 | виконання третьої обов'язкової задачі дає запуску статус «completed» | `supabase/migrations/20261020142036_mark_task_done.sql` (mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | — | відкладено (DB-тести не запускаються в CI) |
 | AC-TASK-05 | сторінка запуску показує прогрес «2 of 5 done» | `src/lib/runs/progress.ts`, `src/app/runs/[id]/page.tsx` | `src/lib/runs/progress.test.ts` | реалізовано |
 | AC-TASK-06 | менеджер бачить у списку лише запуски, де він менеджер запуску або виконавець | `supabase/migrations/20261020091923_run_schema_and_seed.sql`, `src/app/runs/page.tsx` | — | відкладено (DB-тести не запускаються в CI) |
-| AC-TASK-07 | адміністратор позначає задачу чужого запуску «done» | — | — | відкладено (чекає реалізації) |
+| AC-TASK-07 | адміністратор позначає задачу чужого запуску «done» | `supabase/migrations/20261020142036_mark_task_done.sql` (mark_task_done), `src/app/runs/[id]/actions.ts` (markTaskDone) | — | відкладено (DB-тести не запускаються в CI) |
 | AC-TASK-08 | сторінка запуску показує статус кожної з 5 задач | `src/lib/runs/groupTasksBySection.ts`, `src/lib/runs/labels.ts`, `src/app/runs/[id]/page.tsx` | `src/lib/runs/groupTasksBySection.test.ts` | реалізовано |
 | AC-TASK-09 | список запусків показує прогрес «2 of 5 done» | `src/lib/runs/runList.ts`, `src/app/runs/page.tsx` | `src/lib/runs/runList.test.ts` | реалізовано |
